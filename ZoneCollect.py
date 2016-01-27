@@ -16,12 +16,6 @@ import json
 
 
 
-def init_pgpkey(KeyPath):
-	logging.debug("enter function init_pgpkey()")
-	#init and promote pgp keys , to possess pub-key an ultimate
-	keyID = ImportKey(KeyPath)
-	PromoteTrustkey(keyID)
-	return None
 
 
 
@@ -82,6 +76,30 @@ def init_logging(LogPath):
 			filemode = 'a')
 	logging.info('#'*30 + "A New restart:")	
 
+	return None
+
+
+def init_environ():
+	lang_env = os.environ["LANG"]
+	if "zh_CN" in lang_env:
+		os.environ["LANG"] = "en_US.UTF-8"
+		os.environ["HOME"] = "/home/nagios"
+		logging.info("change environment variable LANG to en_US.UTF-8")
+	else:
+		pass
+
+	return None
+
+
+
+def init_pgpkey(KeyPath):
+	logging.debug("enter function init_pgpkey()")
+	#init and promote pgp keys , to possess pub-key an ultimate
+	keyID = ImportKey(KeyPath)
+	PromoteTrustkey(keyID)
+
+
+	return None
 
 
 
@@ -92,8 +110,9 @@ def init(Prefix, BackupFolder, FinalFolder, LogPath, KeyPath):
 
 	init_logging(LogPath)
 
-	init_pgpkey(KeyPath)
+	init_environ()
 
+	init_pgpkey(KeyPath)
 
 
 def pull(ZoneFileServerpath, SigFileServerpath):
@@ -110,7 +129,7 @@ def pull(ZoneFileServerpath, SigFileServerpath):
 
 	zoneFile = timeString+ZoneFileServerpath.split('/')[-1]
 	tempdir = "/tmp/root-zone-collector"
-	cmdstring = "curl %s  -s -o %s/%s --retry-delay 60 --retry 3" % (ZoneFileServerpath, tempdir, zoneFile)
+	cmdstring = "curl %s -s -o%s/%s --retry-delay 60 --retry 3" % (ZoneFileServerpath, tempdir, zoneFile)
 	sub = subprocess.Popen(cmdstring, shell=True)
 	sub.wait()
 	dataReturnCode = sub.returncode
@@ -122,7 +141,7 @@ def pull(ZoneFileServerpath, SigFileServerpath):
 	logFile = timeString+"root.zone.log"
 	fp= open("%s/%s" % (tempdir,logFile) ,"w")
 	json.dump(logDict, fp, indent=4, sort_keys=True)
-	fp.close() 
+	fp.close()
 
 
 
@@ -146,6 +165,7 @@ def check_move(SigFile, DataFile, LogFile, BackupFolder, FinalFolder):
 	sub = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
 	sub.wait()
 	linelist = sub.stderr.readlines()
+	#pprint.pprint(linelist)
 	res1 = re.search("Good signature",linelist[1])
 	res2 = re.search("完好的签名",linelist[1])
 	if res1 != None or res2 != None:
@@ -223,11 +243,17 @@ def ImportKey(Keypath):
 #	print Keypath
 	logging.debug("enter function ImportKey()")
 	#inport public-pgp-key from file to key-ring(in memory)
+	#print "******"
+	#print os.system("whoami")
+	#os.system("export HOME=/home/nagios")
+	#print os.system("env | grep HOME")
+	#print  "######"
+	#print os.system("env | grep ROOT")
 	cmd = "gpg --import %s" % Keypath
 	sub = subprocess.Popen(cmd, stderr=subprocess.PIPE, shell=True)
 	sub.wait()
 	res = sub.stderr.readlines() 
-#	pprint.pprint(res)
+	#pprint.pprint(res)
 	if "not changed" in res[0] or "未改变" in res[0]:
 		logging.info("key already exist[repeated import]")
 #		print "key already imported!"
@@ -321,9 +347,36 @@ def usage():
 
 
 
-if __name__ == "__main__":
-	#deal with parameter 
+def createDaemon():	
+	try:
+		if os.fork() > 0: os._exit(0)
+	except OSError, error:
+		print 'fork #1 failed: %d (%s)' % (error.errno, error.strerror)
+		os._exit(1)
+	os.chdir('/')
+	os.setsid()
+	os.umask(0)
+	try:
+		pid = os.fork()
+		if pid > 0:
+			####:show the pid of daemon process
+			####print 'Daemon PID %d' % pid
+			os._exit(0)
+	except OSError, error:
+		print 'fork #2 failed: %d (%s)' % (error.errno, error.strerror)
+		os._exit(1)
+	sys.stdout.flush()
+	sys.stderr.flush()
+	si = file("/dev/null", 'r')
+	so = file("/dev/null", 'a+')
+	se = file("/dev/null", 'a+', 0)
+	os.dup2(si.fileno(), sys.stdin.fileno())
+	os.dup2(so.fileno(), sys.stdout.fileno())
+	os.dup2(se.fileno(), sys.stderr.fileno())
+	main() # function demo
 
+
+def main():
 	configurationFilePath = "dummy"
 	periodTime = "dummy"
 	ifOnce = "yes"
@@ -367,9 +420,11 @@ if __name__ == "__main__":
 	if ifOnce == "yes":
 		proc(zoneFileDir, sigFileDir, backupFolder, finalFolder)
 	else:
-		if periodTime == "dummy":
+		if periodTime == "0":
 			periodTime = period
 		timing_exe(int(periodTime), zoneFileDir,sigFileDir,backupFolder, finalFolder )	
 
-
+if __name__ == "__main__":
+	#deal with parameter 
+	createDaemon()
 

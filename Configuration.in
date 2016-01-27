@@ -6,6 +6,6 @@ LogPath		=	Log
 
 #input
 KeyPath 		= 	/usr/local/RootZoneCollector/PGPVarifyPublicKey.pub
-Period			=	28800
+Period			=	300
 ZoneDir		=	www.internic.net/domain/root.zone
 SigDir			=	www.internic.net/domain/root.zone.sig
