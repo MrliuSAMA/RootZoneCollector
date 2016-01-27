@@ -7,7 +7,7 @@ import subprocess
 import time
 import os
 
-#ControlPREFIX = "/usr/local/RootZoneCollector/"
+#ControlPREFIX = "/opt/RootZoneCollect/RootZoneCollector/"
 
 def startService(ControlPREFIX):
 	#start ZoneCollect.py process
@@ -30,8 +30,8 @@ def startService(ControlPREFIX):
 	if judge_ifrun == 1:
 		return None
 	elif judge_ifrun == 0:
-		cmd_run = "python %s/ZoneCollect.py -c /usr/local/RootZoneCollector/Configuration.in -p 0" % ControlPREFIX
-		#cmd_run = "python %s/ZoneCollect.py -c /usr/local/RootZoneCollector/Configuration.in &" % ControlPREFIX
+		cmd_run = "python %s/ZoneCollect.py -c /opt/RootZoneCollect/RootZoneCollector/Configuration.in -p 0" % ControlPREFIX
+		#cmd_run = "python %s/ZoneCollect.py -c /opt/RootZoneCollect/RootZoneCollector/Configuration.in &" % ControlPREFIX
 		#f.write("1231231232\n")
 		#f.close()
 		#print ("123123123")
@@ -113,7 +113,7 @@ def runServiceOnce(ControlPREFIX):
 
 def main(argv):
 
-	ProgramPath = "/usr/local/RootZoneCollector"
+	ProgramPath = "/opt/RootZoneCollect/RootZoneCollector"
 
 	try:
 		opts,args = getopt.getopt(argv[1:], "h", ["stop","start","restart","runonce","update="])

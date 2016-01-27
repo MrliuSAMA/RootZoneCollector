@@ -16,9 +16,6 @@ import json
 
 
 
-
-
-
 def init_directory(Prefix, BackupFolder, FinalFolder, LogPath):
 	#init_directory must not use logging , because logging module install in init_logging()
 	#init necessary directory
@@ -80,13 +77,21 @@ def init_logging(LogPath):
 
 
 def init_environ():
-	lang_env = os.environ["LANG"]
-	if "zh_CN" in lang_env:
-		os.environ["LANG"] = "en_US.UTF-8"
-		os.environ["HOME"] = "/home/nagios"
-		logging.info("change environment variable LANG to en_US.UTF-8")
-	else:
+
+	logging.info("init environ")
+
+	try:
+		lang_env = os.environ["LANG"]
+		if "zh_CN" in lang_env:
+			os.environ["LANG"] = "en_US.UTF-8"
+			logging.info("change environment variable LANG to en_US.UTF-8")
+		else:
+			pass
+	except:
 		pass
+
+	os.environ["HOME"] = "/home/nagios"
+	logging.info("change environment variable HOME to /home/nagios")
 
 	return None
 

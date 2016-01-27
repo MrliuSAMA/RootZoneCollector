@@ -69,7 +69,7 @@ def ReturnInfo_pid():
 			continue
 		if lines.split()[7].startswith("python") or lines.split()[7].startswith("ZoneCollect"):
 			print ("pid=%s," % lines.split()[1], end="\n")
-			judgeifrun = 1
+			judge_ifrun = 1
 			break
 	if judge_ifrun == 0:
 		print ("pid=0,", end="\n")	
@@ -84,7 +84,7 @@ def ReturnInfo_key(ConfigureFile):
 	print ("PGPKEY="+lines[4]+',',end="\n")
 	f.close()
 
-	sub = subprocess.Popen("gpg --list-keys", stdout=subprocess.PIPE, shell=True)
+	sub = subprocess.Popen("sudo gpg --list-keys", stdout=subprocess.PIPE, shell=True)
 	sub.wait()
 	reslines = sub.stdout.readlines()	
 	print (reslines[2].split()[1].split('/')[-1]+',', end="\n")
@@ -121,6 +121,6 @@ def ReturnInfo(ConfigureFile):
 
 if __name__ == "__main__":
 	#enter point
-	ConfigureFile = "/usr/local/RootZoneCollector/Configuration.in"
+	ConfigureFile = "/opt/RootZoneCollect/RootZoneCollector/Configuration.in"
 
 	ReturnInfo(ConfigureFile)
